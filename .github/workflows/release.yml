@@ -1,0 +1,83 @@
+# Builds the downloads on Windows and macOS, checks each one starts (--self-test), and publishes them on a version tag.
+#   git tag v0.1.0 && git push origin v0.1.0
+# Run it by hand (Actions > Release > Run workflow) to build and test without publishing. See docs/releasing.md.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  pull_request: # build and self-test (never publish) when a change could break the downloads
+    paths: ["packaging/**", "main.py", "requirements*.txt", "djtoolkit/paths.py", ".github/workflows/release.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build for ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            name: Windows
+            asset: DJ-Toolkit-Windows.zip
+          - os: macos-latest
+            name: macOS
+            asset: DJ-Toolkit-macOS.dmg
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: python -m pip install -r requirements-build.txt
+      - run: python -m PyInstaller --noconfirm packaging/dj-toolkit.spec
+
+      - name: Check it starts, then zip it (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $run = Start-Process -FilePath "dist/DJ Toolkit/DJ Toolkit.exe" -ArgumentList "--self-test" -Wait -PassThru
+          if ($run.ExitCode -ne 0) { throw "The built app failed its self-test (exit $($run.ExitCode))." }
+          Compress-Archive -Path "dist/DJ Toolkit" -DestinationPath "${{ matrix.asset }}"
+
+      - name: Check it starts, then make the disk image (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          "dist/DJ Toolkit.app/Contents/MacOS/DJ Toolkit" --self-test
+          mkdir dmg
+          cp -R "dist/DJ Toolkit.app" dmg/
+          ln -s /Applications dmg/Applications
+          hdiutil create -volname "DJ Toolkit" -srcfolder dmg -ov -format UDZO "${{ matrix.asset }}"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.asset }}
+          path: ${{ matrix.asset }}
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    name: Publish the release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          merge-multiple: true
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create "${{ github.ref_name }}" DJ-Toolkit-Windows.zip DJ-Toolkit-macOS.dmg
+          --repo "${{ github.repository }}" --title "DJ Toolkit ${{ github.ref_name }}" --generate-notes

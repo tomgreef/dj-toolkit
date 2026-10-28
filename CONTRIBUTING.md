@@ -4,6 +4,10 @@ Thanks for helping. DJ Toolkit is small, so a good change is small too.
 
 ## Ways to help
 
+- **Vote on what comes next.** Every idea is an issue labelled
+  [`idea`](https://github.com/tomgreef/on-the-one/issues?q=is%3Aissue+is%3Aopen+label%3Aidea+sort%3Areactions-%2B1-desc),
+  and a thumbs-up reaction is a vote (please don't comment "+1"). The website and the app's Requests page list the
+  most-voted ones. You can suggest an idea or report a bug from either, too.
 - **DJ feedback, no code needed.** Try it on a real acapella or your own folders, and tell us what felt off.
   Open an issue and pick *DJ feedback*.
 - **Argue with the drafts.** The tutorials and the persona ([docs/ux/PERSONA.md](docs/ux/PERSONA.md)) are guesses

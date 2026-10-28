@@ -13,6 +13,10 @@ versions will follow [Semantic Versioning](https://semver.org/) once there are r
   screenshots in both themes (`tools/screenshots.py`), and guardrail tests that turn the project's written rules
   into checks.
 - A landing page in `website/` (Astro), published with GitHub Pages.
+- **Requests**, a new page: the most-voted ideas from GitHub, with ways to vote, suggest a feature and report a bug
+  (pre-filled). The website lists the same ideas.
+- **macOS support**, and downloads for Windows and macOS built by GitHub Actions, each checked with `--self-test`.
+- Shortcut hints follow the system (Ctrl on Windows, Cmd on macOS).
 
 ### Changed
 

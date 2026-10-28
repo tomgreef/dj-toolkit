@@ -43,7 +43,7 @@ from . import icons, theme
 from .audio_output import AudioOutput, fit_for_output
 from .dialogs import pick_dir, pick_file
 from .waveform import WaveformPanel, format_clock
-from .widgets import Panel, Segmented, bind_icon, field, icon_button, page_header, text_button
+from .widgets import Panel, Segmented, bind_icon, field, icon_button, keys, page_header, text_button
 from .workers import Task
 
 AUDIO_FILTER = "Audio (*.wav *.mp3 *.flac *.aiff *.aif *.m4a *.ogg);;All files (*)"
@@ -169,9 +169,11 @@ class AcapellaTab(QWidget):
         self.status.setWordWrap(True)
         self.status.setObjectName("muted")
         self.status.setAccessibleName("Status")
-        self.preview_btn = text_button("Preview", "play", None, "Hear the count-in, then the vocal  (Ctrl+P)")
+        self.preview_btn = text_button(
+            "Preview", "play", None, f"Hear the count-in, then the vocal  ({keys('Ctrl+P')})"
+        )
         self.preview_btn.clicked.connect(self._toggle_preview)
-        self.export_btn = text_button("Export", "export", "primary", "Save the count-in version  (Ctrl+E)")
+        self.export_btn = text_button("Export", "export", "primary", f"Save the count-in version  ({keys('Ctrl+E')})")
         self.export_btn.clicked.connect(self._export)
         bar.addWidget(self.status, 1)
         bar.addWidget(self.preview_btn)
@@ -228,7 +230,7 @@ class AcapellaTab(QWidget):
             "Suggest again", None, "ghost", "Listen to the track again and suggest four beats"
         )
         self.detect_btn.clicked.connect(lambda: self._detect(force=True))
-        other = text_button("Open another…", "folder", "ghost", "Open a different file  (Ctrl+O)")
+        other = text_button("Open another…", "folder", "ghost", f"Open a different file  ({keys('Ctrl+O')})")
         other.clicked.connect(self._open_dialog)
         fb.addWidget(self.file_name)
         for w in (self.pill_dur, self.pill_sr, self.pill_ch, self.busy):
@@ -438,8 +440,8 @@ class AcapellaTab(QWidget):
         for b in (self.preview_btn, self.export_btn):
             b.setEnabled(ok)
         if ok:
-            self.preview_btn.setToolTip("Hear the count-in, then the vocal  (Ctrl+P)")
-            self.export_btn.setToolTip("Save the count-in version  (Ctrl+E)")
+            self.preview_btn.setToolTip(f"Hear the count-in, then the vocal  ({keys('Ctrl+P')})")
+            self.export_btn.setToolTip(f"Save the count-in version  ({keys('Ctrl+E')})")
         else:
             self.preview_btn.setToolTip("Set the four beats and the start first.")
             self.export_btn.setToolTip("Set the four beats and the start first.")
