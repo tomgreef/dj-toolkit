@@ -33,6 +33,14 @@ Open an issue before starting anything big, so two people don't build the same t
 - **A shared, anonymous forum** for the tutorials, behind the existing `Forum` interface in `djtoolkit/tutorials.py`.
 - **Interview a few working DJs** with the questions at the end of [PERSONA.md](ux/PERSONA.md), and update it.
 
+## How the project runs
+
+Work on the repository itself, the things mature open-source projects do: issues labelled
+[`security`](https://github.com/tomgreef/on-the-one/issues?q=is%3Aissue+is%3Aopen+label%3Asecurity),
+[`ci`](https://github.com/tomgreef/on-the-one/issues?q=is%3Aissue+is%3Aopen+label%3Aci) and
+[`community`](https://github.com/tomgreef/on-the-one/issues?q=is%3Aissue+is%3Aopen+label%3Acommunity).
+Many are small and well explained, good for a first change.
+
 ## Ideas, not yet decided
 
 Hearing the start marker while you scratch; snapping markers to onsets as you drag. The rest of the ideas are issues

@@ -1,11 +1,13 @@
-# Builds the downloads on Windows and macOS, checks each one starts (--self-test), and publishes them on a version tag.
-#   git tag v0.1.0 && git push origin v0.1.0
+# Builds the downloads on Windows and macOS and checks each one starts (--self-test). When a new version reaches main
+# (a merged pull request that bumps __version__ in djtoolkit/__init__.py), it also publishes them as release
+# v<version>, with that version's CHANGELOG notes, and rebuilds the website so its download buttons point at them.
 # Run it by hand (Actions > Release > Run workflow) to build and test without publishing. See docs/releasing.md.
 name: Release
 
 on:
   push:
-    tags: ["v*"]
+    branches: [main]
+    paths: ["djtoolkit/__init__.py", ".github/workflows/release.yml"]
   pull_request: # build and self-test (never publish) when a change could break the downloads
     paths: ["packaging/**", "main.py", "requirements*.txt", "djtoolkit/paths.py", ".github/workflows/release.yml"]
   workflow_dispatch:
@@ -14,8 +16,35 @@ permissions:
   contents: read
 
 jobs:
+  version:
+    name: Find the version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      publish: ${{ steps.version.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(sed -nE 's/^__version__ = "([^"]+)"$/\1/p' djtoolkit/__init__.py)
+          if [ -z "$version" ]; then echo "No __version__ in djtoolkit/__init__.py."; exit 1; fi
+          publish=false
+          if [ "$GITHUB_EVENT_NAME" = push ] && ! gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v$version" --silent 2>/dev/null; then
+            publish=true
+          fi
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          echo "publish=$publish" >> "$GITHUB_OUTPUT"
+          echo "v$version, publish: $publish" >> "$GITHUB_STEP_SUMMARY"
+
   build:
     name: Build for ${{ matrix.name }}
+    needs: version
+    if: github.event_name != 'push' || needs.version.outputs.publish == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -65,19 +94,31 @@ jobs:
           retention-days: 14
 
   publish:
-    name: Publish the release
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
+    name: Publish ${{ needs.version.outputs.tag }}
+    needs: [version, build]
+    if: needs.version.outputs.publish == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
-      contents: write
+      contents: write # create the release and its tag
+      actions: write # start the website build: a release made by a workflow doesn't trigger other workflows
     steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/download-artifact@v8
         with:
           merge-multiple: true
       - name: Create the release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: >
-          gh release create "${{ github.ref_name }}" DJ-Toolkit-Windows.zip DJ-Toolkit-macOS.dmg
-          --repo "${{ github.repository }}" --title "DJ Toolkit ${{ github.ref_name }}" --generate-notes
+          TAG: ${{ needs.version.outputs.tag }}
+        run: |
+          # This version's section of CHANGELOG.md, then GitHub adds the merged pull requests and new contributors.
+          awk -v v="${TAG#v}" 'index($0, "## [" v "]") == 1 { on = 1; next } on && /^## / { exit } on' CHANGELOG.md > notes.md
+          gh release create "$TAG" DJ-Toolkit-Windows.zip DJ-Toolkit-macOS.dmg --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" --title "DJ Toolkit $TAG" --notes-file notes.md --generate-notes
+      - name: Rebuild the website with the new download links
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main

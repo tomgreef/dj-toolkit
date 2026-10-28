@@ -11,7 +11,7 @@ Screen question: "Is the click on the beat?"  The waveform leads; Export is one 
 from __future__ import annotations
 
 import tempfile
-from pathlib import Path
+from pathlib import Path, PurePath
 
 import numpy as np
 from PySide6.QtCore import Qt, QTimer, QUrl
@@ -48,6 +48,16 @@ from .workers import Task
 
 AUDIO_FILTER = "Audio (*.wav *.mp3 *.flac *.aiff *.aif *.m4a *.ogg);;All files (*)"
 SP = theme.SP
+
+
+def drive_of[P: PurePath](folder: P) -> P | None:
+    """The drive a folder is on: Q:\\ on Windows, /Volumes/GIGS for a USB stick on a Mac. None for the Mac's own disk."""
+    if folder.drive:
+        return type(folder)(folder.anchor)
+    if len(folder.parts) > 2 and folder.parts[:2] == ("/", "Volumes"):
+        return type(folder)(*folder.parts[:3])
+    return None
+
 
 STEP_HELP = {
     1: (
@@ -967,9 +977,9 @@ class AcapellaTab(QWidget):
         if not text:
             return default, ""
         folder = Path(text)
-        anchor = folder.anchor
-        if anchor and not Path(anchor).exists():
-            return default, f" {anchor} isn't connected, so it went next to the original instead."
+        drive = drive_of(folder)
+        if drive and not drive.exists():
+            return default, f" {drive.name or drive} isn't connected, so it went next to the original instead."
         return folder, ""
 
     def _export(self) -> None:

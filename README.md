@@ -46,6 +46,7 @@ DJs, designers, writers and developers are all welcome, and AI-assisted work is 
 | Work with an AI coding agent | [docs/vibe-coding.md](docs/vibe-coding.md) (agents read [AGENTS.md](AGENTS.md)) |
 | Know who it's for and how it talks | [docs/ux/](docs/ux/README.md) |
 | Find something to build | [docs/roadmap.md](docs/roadmap.md) |
+| Grow from first pull request to maintainer | [GOVERNANCE.md](GOVERNANCE.md) |
 
 ## Licence
 

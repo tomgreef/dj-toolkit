@@ -1,6 +1,6 @@
 name: Idea
 description: Suggest something new, or a better way to do something.
-labels: ["idea"]
+labels: ["idea", "needs triage"]
 body:
   - type: markdown
     attributes:

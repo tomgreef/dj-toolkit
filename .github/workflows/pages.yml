@@ -6,7 +6,7 @@ on:
     branches: [main]
     paths: ["website/**", "assets/tutorials/**", ".github/workflows/pages.yml"]
   release:
-    types: [published] # the download buttons appear as soon as a release is out
+    types: [published] # a release published by hand; the release workflow starts this build itself
   schedule:
     - cron: "17 5 * * *" # once a day, so the vote counts on the page stay fresh
   workflow_dispatch:

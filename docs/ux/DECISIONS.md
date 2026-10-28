@@ -6,6 +6,46 @@ Format: what was asked → what we did → why → what is still open.
 
 ---
 
+## 2026-10-28: Who approves what, roles, Dependabot and security
+
+**Owner request.** "I need to approve all PRs, otherwise this might go crazy", while letting developers grow from
+contributor to maintainer. A clear path from issue to pull request, with templates. Dependabot with auto-merge for
+minor and patch updates; major updates handed to Copilot at the end of the month to follow the migration guide, with
+auto-merge once the checks pass. GitHub's security features, set up the way best practice says. And for agents: in
+chat, only questions and results, no running commentary.
+
+**Done.**
+- **Approval:** `.github/CODEOWNERS` makes the owner the code owner of everything, and the ruleset *A code owner
+  approves* requires their approval. The owner is exempt from that ruleset, because GitHub never lets anyone approve
+  their own pull request. The ruleset *Checks must pass* has no exemptions: nothing lands with red CI, whoever wrote
+  it. *Release tags stay put* stops a published version from being moved. Squash merging only.
+- **Roles** (`GOVERNANCE.md`): contributor, collaborator (write access, invited after about three merged pull
+  requests), maintainer (listed in `CODEOWNERS` for an area, so their approval counts), owner. A personal-account
+  repository has only owner and collaborator levels; moving to a free organization adds Triage and Maintain roles.
+- **Workflow** (`CONTRIBUTING.md`, `docs/maintaining.md`): every issue form adds `needs triage`, and a new form
+  covers code, tests and docs. A maintainer triages weekly to `help wanted` or `good first issue`; you claim an issue
+  by commenting; a pull request says `Fixes #N`.
+- **Dependabot:** weekly, with a cooldown (new releases wait 3 to 14 days, against hijacked packages). Minor and patch
+  updates come grouped and merge themselves: a workflow approves them. That approval counts only because the
+  dependency files have no code owner. Majors get the label `major update`. On the last day of the month
+  `major-updates.yml` opens an issue for each and assigns Copilot. When Copilot's pull request is ready, auto-merge
+  turns on with the owner's token, so it follows the owner's rules and merges when green. GitHub only lets a person
+  assign Copilot, so this needs a `COPILOT_TOKEN` secret; until the owner adds one, the issues wait for a person.
+  Copilot's pull requests also need **Approve and run workflows**, GitHub's default. We kept it as the owner's look.
+- **Releases** now publish themselves when a pull request that bumps `__version__` merges. Before, you pushed a tag
+  by hand. The notes come from the version's CHANGELOG section.
+- **Security:** private vulnerability reporting, Dependabot alerts, secret scanning with push protection, CodeQL
+  (Python, the website, the workflows), dependency review on every pull request (blocks moderate or worse), and
+  read-only workflow tokens by default.
+- `tests/test_repo_rules.py` checks the parts that live in files: only the dependency files lack an owner, majors
+  never merge themselves, and every issue form waits for triage.
+
+**Found on the way.** The first macOS CI run caught a real bug. Exporting to a USB stick that isn't plugged in didn't
+fall back on a Mac, because the drive check only knew Windows drive letters. `drive_of` now knows `/Volumes/<name>`.
+
+**Open:** the owner creates `COPILOT_TOKEN` (`docs/maintaining.md` has the steps); a free organization once there are
+more than two maintainers.
+
 ## 2026-10-28: Market research, issues, voting, and Windows and macOS downloads
 
 **Owner request.** After publishing: research the market and create issues for features to build next; a voting system
@@ -217,5 +257,5 @@ Resolved on 2026-10-28 (see the entry at the top): the skills are not shipped, a
 Still open:
 
 - Ship real (not mock) Spotify setup screenshots, or keep the mocks labelled as illustrations.
-- Packaging to a Windows `.exe` (PyInstaller) is not done. `djtoolkit/paths.py` already handles a frozen bundle.
+- Packaging: done on 2026-10-28 (downloads for Windows and macOS, see that entry).
 - Persona and tutorials: label clearly as hypotheses; invite DJs to challenge them (the forum is the intended place).

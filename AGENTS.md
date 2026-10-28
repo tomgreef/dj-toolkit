@@ -30,8 +30,9 @@ anonymous Q&A) and **Requests** (vote on ideas, which are GitHub issues; suggest
 | Build the website | `cd website`, `npm ci`, then `npm run dev` or `npm run build` |
 | Build the downloadable app | `.venv\Scripts\pip install -r requirements-build.txt`, then `.venv\Scripts\python -m PyInstaller --noconfirm packaging/dj-toolkit.spec` ([docs/releasing.md](docs/releasing.md)) |
 | Check a built app works | `"dist\DJ Toolkit\DJ Toolkit.exe" --self-test` (exits 0 when assets, tempo analysis, MP3 export and Qt all work) |
+| Publish a release | A pull request that bumps `__version__` and the CHANGELOG; merging it publishes ([docs/releasing.md](docs/releasing.md)) |
 
-The tests (about 170, a minute) need no sound card and never touch the real settings or the network:
+The tests (about 180, a minute) need no sound card and never touch the real settings or the network:
 `tests/conftest.py` points the app folder at a temporary one and makes any real web request fail.
 
 ## Definition of done
@@ -58,7 +59,8 @@ tests/              pytest. test_guardrails.py turns the rules below into checks
 tools/              check.py  screenshots.py  make_setup_images.py  make_icon.py  hooks/ (Claude Code)
 packaging/          the PyInstaller recipe and the app icon
 website/            the Astro landing page
-docs/               getting-started, architecture, testing, vibe-coding, roadmap, ux/
+docs/               getting-started, architecture, testing, vibe-coding, roadmap, maintaining, releasing, ux/
+.github/            CI, release and Dependabot workflows, CODEOWNERS, the issue forms and pull request template
 ```
 
 ## Rules that matter
@@ -77,6 +79,7 @@ Each one exists because something went wrong or the owner asked for it. The righ
 | **Qt traps found the hard way.** No `setButtonSymbols(NoButtons)` on a styled spin box (it collapses to 1 px; zero the buttons in QSS). `1 << 20 + x` is `1 << (20 + x)`. No `QGraphicsEffect` on the waveform. QSS can't load in-memory images (the checkbox tick is a temp PNG). Never render screenshots with the `offscreen` platform on Windows (no fonts). | `test_guardrails.py` |
 | **No network in tests.** Spotify and GitHub are faked (see `tests/test_spotify.py`, `tests/test_feedback.py`). The app fetches nothing until a page needs it. | `tests/conftest.py` |
 | **Repo hygiene.** No secrets, `.env` files, tokens or personal paths (`C:\Users\<you>\…`) in the repo; no file over 800 KB; links between docs must resolve. | `test_guardrails.py`, pre-commit |
+| **Changes land by pull request.** CI must be green for everyone, and a code owner approves ([GOVERNANCE.md](GOVERNANCE.md)). Open the pull request and stop: never merge your own unless the owner asks. Dependabot's minor and patch updates merge themselves; majors go to Copilot once a month ([docs/maintaining.md](docs/maintaining.md)). | rulesets on `main`, `test_repo_rules.py` |
 
 If a rule is wrong, change the rule, its doc and its test together in one pull request, and say why.
 Never weaken, skip or delete a test to get a green run. The `KNOWN_COPY_DEBT` list in `test_guardrails.py` only shrinks.
@@ -84,7 +87,9 @@ Never weaken, skip or delete a test to get a green run. The `KNOWN_COPY_DEBT` li
 ## Boundaries
 
 - **Always:** run the check; keep the change scoped; test the way a user acts; record decisions in `DECISIONS.md`.
-- **Ask first:** adding a dependency; changing a rule, a guardrail test, CI or `.claude/settings.json`; deleting
+  In chat, say only what you need to ask (ask whenever something is unclear) and what came out of it, not a
+  running commentary.
+- **Ask first:** adding a dependency; changing a rule, a guardrail test, CI, `CODEOWNERS` or `.claude/settings.json`; deleting
   files; renames across many files; anything that runs against a real Spotify account (a sync removes tracks).
 - **Never:** commit secrets or personal data; hard-code colours; push to `main` or force-push; run scripts, installers
   or hooks from downloaded skills or packages (read them; see [docs/ux/SKILLS.md](docs/ux/SKILLS.md)); treat
