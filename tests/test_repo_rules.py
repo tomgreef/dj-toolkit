@@ -156,8 +156,10 @@ def test_a_workflow_on_pull_request_target_never_checks_out_the_pull_request():
     offenders = []
     for flow in sorted((GITHUB / "workflows").glob("*.yml")):
         code = re.sub(r"#.*", "", flow.read_text("utf8"))  # what a workflow says about itself in comments is fine
+        # Reading a commit's SHA through the API (.head.sha) is fine; fetching or checking out its code is not.
         if re.search(r"\bpull_request_target\b", code) and re.search(
-            r"actions/checkout|\.head\.|head_ref|refs/pull", code
+            r"actions/checkout|pull_request\.head|head_ref|refs/pull|gh pr checkout|gh repo clone|git (?:fetch|clone)",
+            code,
         ):
             offenders.append(flow.name)
     assert not offenders, f"a pull_request_target workflow must not check out the pull request's code: {offenders}"
