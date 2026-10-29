@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import operator
+import os
 import platform
 import re
 import subprocess
@@ -234,11 +235,15 @@ def main(argv: list[str]) -> int:
 
     from djtoolkit import __version__
 
-    inspected = json.loads(
-        subprocess.run(
-            [sys.executable, "-m", "pip", "inspect"], stdout=subprocess.PIPE, encoding="utf-8", check=True
-        ).stdout
+    # pip prints each package's own text, emoji included, so on Windows it must write UTF-8 into the pipe, not cp1252
+    pip = subprocess.run(
+        [sys.executable, "-m", "pip", "inspect"],
+        stdout=subprocess.PIPE,
+        encoding="utf-8",
+        env={**os.environ, "PYTHONIOENCODING": "utf-8"},
+        check=True,
     )
+    inspected = json.loads(pip.stdout)
     sbom = build_sbom(
         inspected,
         (ROOT / "requirements.txt").read_text("utf8"),
