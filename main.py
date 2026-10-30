@@ -68,3 +68,22 @@ def self_test() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+def test_sync_tab_accessibility(app):
+    from djtoolkit.settings import Settings
+    from djtoolkit.ui.sync_tab import SyncTab
+
+    t = SyncTab(Settings())
+
+    # Check that controls have accessible names for screen readers
+    assert t.root_edit.accessibleName() == "Music folder"
+    assert t.thresh.accessibleName() == "Match strictness"
+    assert t.preview_btn.accessibleName() == "Preview changes"
+    assert t.sync_btn.accessibleName() == "Sync playlists"
+    assert t.more_btn.accessibleName() == "More actions"
+
+    # Check that there is a sensible tab order (this relies on the setTabOrder calls)
+    # In PySide6, we can check the next widget in the focus chain
+    assert t.root_edit.nextInFocusChain() == t.ignore_edit
+    assert t.ignore_edit.nextInFocusChain() == t.tmpl_edit
