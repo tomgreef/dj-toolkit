@@ -38,7 +38,8 @@ its minor and patch updates. [`dependency-guard.yml`](../.github/workflows/depen
 every pull request it posts a status called **Dependency files**, which fails when anyone but Dependabot or the owner
 changed one of those files. A new dependency comes through an issue and the owner, never inside another change.
 The short lists those files are built from, `tools/deps/*.in` ([Requirement hashes](#requirement-hashes)), do have an
-owner: choosing a package needs the owner's approval.
+owner, and the guard watches the folder too: choosing a package needs the owner's approval, and the check fails for
+anyone else who changes one.
 
 The guard runs from `main` and never checks out the pull request, so the pull request can't change what it checks. It
 posts the status through the API on the pull request's last commit, because a check from `pull_request_target` isn't
@@ -148,7 +149,10 @@ If `type` is `tag`, run `gh api repos/astral-sh/ruff-pre-commit/git/tags/<sha> -
 chose included, to one version and to a hash of each file of that version. CI, the release and Copilot's setup install
 with `pip install --require-hashes`, which stops when a package has no hash or a downloaded file doesn't match. A
 tampered download, or an index that serves another file under the same version, fails the run instead of reaching a
-build. (A plain `pip install -r` on your own machine checks the hashes too.)
+build. (A plain `pip install -r` on your own machine checks the hashes too.) The same installs add `--only-binary :all:`:
+pip then refuses to build a package from source, which would run that package's own build code on the runner. Every
+package has a ready-made wheel for the systems CI and the release use (Windows x64, macOS arm64 and Linux x86_64), so
+this only ever fails when a new version has none: the run says which package, and a person decides what to do.
 
 `uv pip compile` writes the three files from the short lists in `tools/deps/` (`app.in`, `dev.in`, `build.in`: the
 packages someone chose, by name), and each file's header records the command. Each file is complete in itself and
