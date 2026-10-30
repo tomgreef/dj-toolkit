@@ -1,5 +1,7 @@
 # Roadmap
 
+> **Note:** The [DJ Toolkit roadmap board](https://github.com/users/tomgreef/projects/3) tracks what is being built *now, next, and later*. This document tracks the honest status of each area (which the board can't show).
+
 Where things stand, and what would help most. The ideas themselves, with their votes, are the
 [issues labelled `idea`](https://github.com/tomgreef/dj-toolkit/issues?q=is%3Aissue+is%3Aopen+label%3Aidea+sort%3Areactions-%2B1-desc).
 Open an issue before starting anything big, so two people don't build the same thing.

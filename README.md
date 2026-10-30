@@ -49,7 +49,7 @@ DJs, designers, writers and developers are all welcome, and AI-assisted work is 
 | Understand how it fits together | [docs/architecture.md](docs/architecture.md) |
 | Work with an AI coding agent | [docs/vibe-coding.md](docs/vibe-coding.md) (agents read [AGENTS.md](AGENTS.md)) |
 | Know who it's for and how it talks | [docs/ux/](docs/ux/README.md) |
-| Find something to build | [docs/roadmap.md](docs/roadmap.md) |
+| Find something to build | [Roadmap board](https://github.com/users/tomgreef/projects/3) and [docs/roadmap.md](docs/roadmap.md) |
 | Grow from first pull request to maintainer | [GOVERNANCE.md](GOVERNANCE.md) |
 
 ## Licence
