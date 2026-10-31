@@ -84,8 +84,10 @@ class SyncTab(QWidget):
         self.dot = status_dot("off")
         self.conn_lbl = QLabel()
         self.guide_btn = text_button("Link Spotify", None, None, "Step-by-step setup, with pictures")
+        self.guide_btn.setAccessibleName("Link Spotify setup guide")
         self.guide_btn.clicked.connect(self.openSetupGuide)
         self.signout_btn = text_button("Sign out", None, "ghost")
+        self.signout_btn.setAccessibleName("Sign out of Spotify")
         self.signout_btn.clicked.connect(self._sign_out)
         row.addWidget(self.dot)
         row.addWidget(self.conn_lbl, 1)
@@ -97,8 +99,10 @@ class SyncTab(QWidget):
     def _folders_panel(self) -> Panel:
         pan = Panel("Your folders")
         self.root_edit = QLineEdit(self.s.music_root)
+        self.root_edit.setAccessibleName("Music folder")
         self.root_edit.setPlaceholderText(r"e.g. D:\Music\DJ")
         browse = text_button("Browse…", "folder")
+        browse.setAccessibleName("Browse for music folder")
         browse.clicked.connect(self._browse)
         r = QHBoxLayout()
         r.addWidget(self.root_edit, 1)
@@ -113,11 +117,13 @@ class SyncTab(QWidget):
         pan.body.addWidget(self.root_hint)
 
         self.ignore_edit = QLineEdit(self.s.ignore_genres)
+        self.ignore_edit.setAccessibleName("Skip these folders")
         self.ignore_edit.setPlaceholderText("TEMP, Trials")
         pan.body.addWidget(
             field("Skip these folders", self.ignore_edit, "Comma-separated. Handy for scratch and trial folders.")
         )
         self.tmpl_edit = QLineEdit(self.s.playlist_template)
+        self.tmpl_edit.setAccessibleName("Playlist name template")
         pan.body.addWidget(
             field(
                 "Playlist name",
@@ -133,6 +139,7 @@ class SyncTab(QWidget):
     def _matching_panel(self) -> Panel:
         pan = Panel("Matching")
         self.thresh = QDoubleSpinBox()
+        self.thresh.setAccessibleName("Match strictness")
         self.thresh.setRange(0.3, 1.0)
         self.thresh.setSingleStep(0.05)
         self.thresh.setDecimals(2)
@@ -146,6 +153,7 @@ class SyncTab(QWidget):
             )
         )
         self.limit = QSpinBox()
+        self.limit.setAccessibleName("Spotify searches per run")
         self.limit.setRange(0, 5000)
         self.limit.setSpecialValueText("No limit")
         self.limit.setValue(self.s.search_limit)
@@ -166,12 +174,16 @@ class SyncTab(QWidget):
         self.preview_btn = text_button(
             "Preview changes", "check", "primary", "See what would change. Nothing is touched on Spotify."
         )
+        self.preview_btn.setAccessibleName("Preview changes")
         self.preview_btn.clicked.connect(lambda: self._start(dry_run=True))
         self.sync_btn = text_button("Sync playlists", "upload", None)
+        self.sync_btn.setAccessibleName("Sync playlists")
         self.sync_btn.clicked.connect(lambda: self._start(dry_run=False))
         self.cancel_btn = text_button("Cancel", None, "danger")
+        self.cancel_btn.setAccessibleName("Cancel sync")
         self.cancel_btn.clicked.connect(self._cancel)
         self.more_btn = text_button("More", None, "ghost")
+        self.more_btn.setAccessibleName("More actions")
         menu = QMenu(self.more_btn)
         menu.addAction("Import the old tool's .env…", self._import_env)
         menu.addAction("Import the old tool's searches…", self._import_cache)
@@ -203,6 +215,7 @@ class SyncTab(QWidget):
         self.empty.setWordWrap(True)
         self.empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.table = QTableWidget(0, 5)
+        self.table.setAccessibleName("Playlist changes preview")
         self.table.setHorizontalHeaderLabels(["Playlist", "Add", "Remove", "Keep", ""])
         h = self.table.horizontalHeader()
         h.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
@@ -211,10 +224,12 @@ class SyncTab(QWidget):
         h.setDefaultAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         self.table.setShowGrid(False)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        # the arrow keys move a whole row, not one cell
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.verticalHeader().setVisible(False)
         self.table.verticalHeader().setDefaultSectionSize(36)
-        self.table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.table.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.stack.addWidget(self.empty)
         self.stack.addWidget(self.table)
         pan.body.addWidget(self.stack, 1)

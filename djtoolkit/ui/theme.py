@@ -274,8 +274,12 @@ QCheckBox:focus {{ color: {c.text}; }}
 /* ---- data */
 QProgressBar {{ background: {c.panel2}; border: none; border-radius: 3px; max-height: 6px; min-height: 6px; text-align: center; }}
 QProgressBar::chunk {{ background: {c.primary}; border-radius: 3px; }}
-QTableWidget {{ background: transparent; border: none; gridline-color: transparent; outline: none; }}
+QTableWidget {{ background: transparent; border: 2px solid transparent; border-radius: {R_CONTROL}px;
+  gridline-color: transparent; outline: none; }}
 QTableWidget::item {{ padding: 0 8px; border: none; }}
+QTableWidget:focus {{ border-color: {c.link}; }}
+QTableWidget::item:selected {{ background: {c.select}; color: {c.text};
+  border-top: 1px solid {c.border_strong}; border-bottom: 1px solid {c.border_strong}; }}
 QHeaderView::section {{ background: transparent; color: {c.muted}; border: none; border-bottom: 1px solid {c.border};
   padding: 8px; font-weight: 500; }}
 QListWidget {{ background: transparent; border: none; outline: none; }}
