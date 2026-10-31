@@ -5,6 +5,8 @@ and versions follow [Semantic Versioning](https://semver.org/). Each release's s
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-10-31
+
 ### Added
 
 - You can change the Spotify callback port (Spotify sync, More, Callback port) if something else uses 8888.
