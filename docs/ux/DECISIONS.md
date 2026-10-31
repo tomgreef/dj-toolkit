@@ -6,6 +6,29 @@ Format: what was asked → what we did → why → what is still open.
 
 ---
 
+## 2026-10-31: Branch protection stays at 5 of 10 on Scorecard, on purpose
+
+**Owner request.** "You are the owner and security responsible of this project, so take action": decide #121 instead of
+leaving it open.
+
+**What we decided.** Keep all three settings OpenSSF Scorecard marks down, and write the reasons in
+[docs/maintaining.md](../maintaining.md#what-github-enforces):
+
+- *Apply the rules to administrators: no.* The owner is the only code owner and nobody can approve their own pull
+  request, so it would stop every pull request the owner opens. Every required check already applies to the owner.
+- *Two approvals: no, not yet.* It needs a second code owner.
+- *Branches up to date: no.* Dependabot rebases only on a conflict, so it would stall its own auto-merging minor and
+  patch updates behind every other merge. CI runs on `main` after each merge as the backstop.
+
+**Why.** Each of the three would cost more safety than it adds today: the dependency updates are the thing most likely
+to age, and a rule nobody can satisfy gets switched off. The two code-scanning alerts that say so (Branch-Protection
+and Code-Review) are dismissed as "won't fix", with a link to this entry.
+
+**Open.** Revisit the first two when a second code owner joins, and the third if a merge queue is added. The other
+Scorecard alerts (CII best practices, Maintained, Fuzzing, SAST) are not decided here.
+
+---
+
 ## 2026-10-29: A maintainer's agent that answers, triages and suggests, but can't merge
 
 **Owner request.** The repository is getting traction: a routine and a skill that answer people, collaborate on their
