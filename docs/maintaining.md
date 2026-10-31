@@ -15,6 +15,22 @@ Three rulesets (*Settings > Rules > Rulesets*):
 
 A check that only warns gets ignored, so none of these does: a problem is fixed in the change that causes it.
 
+**Three things OpenSSF Scorecard marks down, kept on purpose** (it rates the protection of `main` 5 of 10; decided on
+2026-10-31, [DECISIONS.md](ux/DECISIONS.md)):
+
+- *The rules apply to administrators.* They don't, for the owner's own pull requests. The owner is the only code owner
+  and GitHub doesn't let anyone approve their own pull request, so applying the rule would stop every one of them. What
+  stands in for the review: every check in the first ruleset applies to the owner too (it has no bypass), and an outside
+  pull request is read line by line before it is approved. Change this when a second code owner joins.
+- *Two approvals.* One. A second approval needs a second code owner ([GOVERNANCE.md](../GOVERNANCE.md) says how
+  someone becomes one). Change this with the first.
+- *Branches must be up to date.* They needn't be. Dependabot's minor and patch updates merge themselves once CI is
+  green, and Dependabot only rebases a branch when it conflicts, so the rule would leave each one waiting behind every
+  other merge. CI also runs on `main` after every merge, which catches two green pull requests that break each other.
+  Change this if a merge queue is ever added.
+
+The Scorecard code-review score (changesets approved by someone other than their author) follows from the first point.
+
 **Renaming a CI job?** The first ruleset waits for the old name and blocks every pull request. Update the ruleset in
 the same change.
 
