@@ -225,6 +225,8 @@ class SyncTab(QWidget):
         self.table.setShowGrid(False)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        # the arrow keys move a whole row, not one cell
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.verticalHeader().setVisible(False)
         self.table.verticalHeader().setDefaultSectionSize(36)
         self.table.setFocusPolicy(Qt.FocusPolicy.StrongFocus)

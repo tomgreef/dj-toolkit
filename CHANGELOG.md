@@ -17,6 +17,9 @@ and versions follow [Semantic Versioning](https://semver.org/). Each release's s
 
 ### Fixed
 
+- The Spotify page works with the keyboard and a screen reader. Tab reaches every control, including the preview
+  table: the arrow keys move between playlists, and a ring shows where you are, in Booth and Daylight. A screen reader
+  now names every field.
 - The **More** menu on the Spotify page is readable in the Daylight theme: its background and text follow the theme, and
   the entry that is switched off looks switched off.
 

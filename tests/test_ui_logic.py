@@ -356,3 +356,87 @@ def test_a_disabled_menu_entry_looks_disabled(app):
         loud, quiet = ink(img, menu.actionGeometry(on), bg), ink(img, menu.actionGeometry(off), bg)
         assert loud > quiet > 0  # the disabled entry is quieter than the others, and still legible
     theme.apply(app, "dark", theme.DEFAULT_ACCENT)
+
+
+# ------------------------------------------- the Spotify page, by keyboard and screen reader
+def _tab_stops(page):
+    """What Tab stops on, in order: walk the page's focus chain once, from its first control."""
+    from PySide6.QtCore import Qt
+
+    stops, seen, w = [], set(), page.guide_btn
+    while w is not None and id(w) not in seen:
+        seen.add(id(w))
+        if w.focusPolicy() & Qt.FocusPolicy.TabFocus and w.isVisibleTo(page) and w.isEnabled():
+            stops.append(w)
+        w = w.nextInFocusChain()
+    return stops
+
+
+def test_every_tab_stop_on_the_spotify_page_has_a_name_a_screen_reader_can_say(app):
+    from PySide6.QtWidgets import QAbstractButton, QLabel
+
+    from djtoolkit.settings import Settings
+    from djtoolkit.ui.sync_tab import SyncTab
+
+    t = SyncTab(Settings())
+    t.stack.setCurrentIndex(1)  # the preview table, which a preview puts on show
+    labelled = {lab.buddy(): lab.text() for lab in t.findChildren(QLabel) if lab.buddy() is not None}
+    nameless = []
+    for w in _tab_stops(t):
+        if w.objectName() == "qt_spinbox_lineedit":  # the editor inside a spin box: the box itself carries the name
+            continue
+        name = w.accessibleName() or (w.text() if isinstance(w, QAbstractButton) else "") or labelled.get(w, "")
+        if not name.strip():
+            nameless.append(type(w).__name__)
+    assert not nameless, f"Tab stops a screen reader can't name: {nameless}"
+
+
+def test_tab_goes_down_the_spotify_page_and_reaches_the_preview(app):
+    from PySide6.QtWidgets import QPushButton
+
+    from djtoolkit.settings import Settings
+    from djtoolkit.ui.sync_tab import SyncTab
+
+    t = SyncTab(Settings())
+    t.stack.setCurrentIndex(1)
+    stops = _tab_stops(t)
+    browse = next(b for b in t.findChildren(QPushButton) if b.text().startswith("Browse"))
+    i = stops.index(t.root_edit)
+    assert stops[i + 1] is browse and stops[i + 2] is t.ignore_edit  # Browse follows the folder it browses for
+    assert stops.index(t.preview_btn) < stops.index(t.table) < stops.index(t.log)  # the preview, then the activity log
+
+
+def test_the_preview_table_shows_where_you_are_in_both_themes(app):
+    """A keyboard user has to see the focus ring on the table and which playlist is current."""
+    from PySide6.QtCore import QPoint, Qt
+    from PySide6.QtGui import QColor
+
+    from djtoolkit.settings import Settings
+    from djtoolkit.spotify import engine
+    from djtoolkit.spotify.types import SyncPlan
+    from djtoolkit.ui.sync_tab import SyncTab
+
+    plans = [SyncPlan(n, f"Local: {n}", ["a"], [], 3) for n in ("House", "Techno", "Disco")]
+    for mode in ("dark", "light"):
+        theme.apply(app, mode)
+        t = SyncTab(Settings())
+        t.resize(900, 700)
+        t.show()
+        t._finished(engine.SyncSummary(tracks=9, matched=9, plans=plans), dry_run=True)
+        t.table.setFixedHeight(200)  # room for the rows, whatever the window's layout does
+        t.table.setCurrentCell(1, 0)
+        t.table.setFocus(Qt.FocusReason.TabFocusReason)
+        app.processEvents()
+        assert t.table.hasFocus() and t.table.currentRow() == 1
+        view = t.table.viewport().grab().toImage()
+        current_y = t.table.visualRect(t.table.model().index(1, 0)).center().y()
+        above_y = t.table.visualRect(t.table.model().index(0, 0)).center().y()
+        # the ring runs round the table, unbroken, even beside the selected row (the pixel is the border's, not the row's)
+        beside_row = t.table.viewport().mapTo(t.table, QPoint(0, current_y)).y()
+        assert t.table.grab().toImage().pixelColor(1, beside_row) == QColor(theme.P.link), mode
+        # the current playlist is marked, in the margin before its text, and the one above it is not
+        assert view.pixelColor(3, current_y) == QColor(theme.P.select), mode
+        assert view.pixelColor(3, above_y) != QColor(theme.P.select), mode
+        assert [i.row() for i in t.table.selectedIndexes()].count(1) == t.table.columnCount()  # the whole row
+        t.close()
+    theme.apply(app, "dark", theme.DEFAULT_ACCENT)
