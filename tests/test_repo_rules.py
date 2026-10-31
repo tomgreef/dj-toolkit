@@ -172,6 +172,27 @@ def test_every_python_package_has_a_sha256_hash():
     )
 
 
+def test_ruff_pre_commit_version_matches_requirements_dev():
+    requirements = (ROOT / "requirements-dev.txt").read_text("utf8")
+    requirement = re.search(r"^ruff==([0-9]+\.[0-9]+\.[0-9]+)\b", requirements, re.M)
+    assert requirement, "requirements-dev.txt must pin Ruff as ruff==X.Y.Z"
+
+    config = (ROOT / ".pre-commit-config.yaml").read_text("utf8")
+    repo = re.search(
+        r"^  - repo: https://github.com/astral-sh/ruff-pre-commit\s*\n(?P<block>.*?)(?=^  - repo:|\Z)",
+        config,
+        re.M | re.S,
+    )
+    assert repo, ".pre-commit-config.yaml must contain the ruff-pre-commit repository"
+    frozen = re.search(r"^\s*rev:\s*\S+\s+# frozen: v([0-9]+\.[0-9]+\.[0-9]+)\s*$", repo.group("block"), re.M)
+    assert frozen, ".pre-commit-config.yaml must freeze ruff-pre-commit with a # frozen: vX.Y.Z comment"
+
+    assert requirement.group(1) == frozen.group(1), (
+        f"Ruff versions differ: requirements-dev.txt has {requirement.group(1)}, while "
+        f".pre-commit-config.yaml has {frozen.group(1)}. Update the Ruff version in one of these files so they match."
+    )
+
+
 def test_the_dependency_guard_watches_every_dependency_file_and_cannot_be_edited_by_a_pull_request():
     flow = (GITHUB / "workflows" / "dependency-guard.yml").read_text("utf8")
     watched = re.search(r'^\s+deps="([^"]+)"$', flow, re.M).group(1).split()
