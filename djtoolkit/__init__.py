@@ -1,3 +1,3 @@
 """DJ Toolkit: prep tools for working DJs."""
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"

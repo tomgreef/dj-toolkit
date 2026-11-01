@@ -5,6 +5,8 @@ and versions follow [Semantic Versioning](https://semver.org/). Each release's s
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-11-01
+
 ### Added
 
 - The downloads now say what is inside them. `THIRD-PARTY-LICENSES.txt` lists the software from other people in the
