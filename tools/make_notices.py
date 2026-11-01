@@ -164,9 +164,10 @@ def build_notices(
             "  Licence text: GPL-2.0, below."
         )
     ffmpeg_terms, ffmpeg_text = ffmpeg_licence(ffmpeg_configuration)
-    release = re.fullmatch(r"\d+(\.\d+)+", ffmpeg_version.strip())
+    # "7.1" and "7.1-essentials_build-www.gyan.dev" are both release 7.1; "N-12345-gabc" (a git build) isn't a release
+    release = re.match(r"\d+(\.\d+)+(?![\w.])|\d+(\.\d+)+(?=-)", ffmpeg_version.strip())
     ffmpeg_source = (
-        f"https://ffmpeg.org/releases/ffmpeg-{ffmpeg_version.strip()}.tar.xz"
+        f"https://ffmpeg.org/releases/ffmpeg-{release.group(0)}.tar.xz"
         if release
         else "https://ffmpeg.org/download.html#get-sources"
     )

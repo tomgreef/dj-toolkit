@@ -99,6 +99,10 @@ def test_ffmpeg_is_described_by_its_own_configuration_line():
     lgpl = notice(package("alpha"), configuration="--enable-libmp3lame")
     assert "Lesser General Public License, version 2.1 or later (this build is configured without --enable-gpl)" in lgpl
 
+    named_build = notice(package("alpha"), ffmpeg="7.1-essentials_build-www.gyan.dev", configuration=GPL_BUILD)
+    assert "ffmpeg 7.1-essentials_build-www.gyan.dev: GNU" in named_build  # the builder's name stays in the notice
+    assert "https://ffmpeg.org/releases/ffmpeg-7.1.tar.xz" in named_build  # and the release it is built from is linked
+
     git_build = notice(package("alpha"), ffmpeg="N-12345-gabcdef", configuration=GPL_BUILD)
     assert "ffmpeg-N-12345" not in git_build and "https://ffmpeg.org/download.html#get-sources" in git_build
 
