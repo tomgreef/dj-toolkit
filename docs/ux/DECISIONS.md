@@ -6,6 +6,35 @@ Format: what was asked → what we did → why → what is still open.
 
 ---
 
+## 2026-11-01: Keep the copyleft software in the downloads, and say so inside them
+
+**Owner request.** "78 can't you do this?": decide #78 (the licences of what the downloads contain) instead of leaving
+it to someone else.
+
+**What we did.** Looked at the real downloads, not only the package metadata. The bundled ffmpeg is 7.1, configured
+with `--enable-gpl` and carrying x264, x265, libmp3lame and more; `mutagen` is GPL-2.0-or-later and the app both reads
+and writes tags with it; Qt, libsndfile and libsoxr are LGPL and ship as separate files; `certifi` is MPL-2.0. Opening
+the built app found two more that no package list shows: Qt Multimedia carries its own FFmpeg libraries (LGPL), and
+Python itself is inside (PSF licence). The downloads carried no GPL or LGPL text and no source pointers at all.
+
+Decided to keep every part and meet its terms, and made the build write the proof: `tools/make_notices.py` (called by
+the spec) writes `THIRD-PARTY-LICENSES.txt` for what is being built, reading ffmpeg's own configuration line, and the
+release's self-test fails if a download lacks it. The build also stops if a package states a copyleft licence the
+notice has no entry for. The six licence texts are in `packaging/licenses`, from the SPDX list at a pinned commit, with
+their hashes checked by a test. Table of the parts:
+[docs/dependencies.md](../dependencies.md#licences-in-the-downloads).
+
+**Why.** Replacing `mutagen` or Qt would be a project each, and none of it is needed to be compliant: the obligations
+are notices, licence texts, a way to the source and, for the LGPL parts, libraries that can be replaced, and the
+downloads already ship the libraries as separate files. What was missing was saying so.
+
+**Open.** (1) Nobody qualified in licences has read the wording: the file says it was not reviewed by a lawyer. (2) The
+ffmpeg is far bigger than the one job it does: a build with only the MP3 encoder would be LGPL and carry much less code
+(an issue). (3) `mutagen` is the one GPL library imported into the app's own process; a permissive replacement that can
+also write tags would remove it. (4) Releases 0.1.0 to 0.1.2 went out without the notice. The next release has it.
+
+---
+
 ## 2026-10-31: Branch protection stays at 5 of 10 on Scorecard, on purpose
 
 **Owner request.** "You are the owner and security responsible of this project, so take action": decide #121 instead of
