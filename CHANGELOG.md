@@ -5,6 +5,12 @@ and versions follow [Semantic Versioning](https://semver.org/). Each release's s
 
 ## [Unreleased]
 
+### Added
+
+- The downloads now say what is inside them. `THIRD-PARTY-LICENSES.txt` lists the software from other people in the
+  app, each part's licence and where its source is, and carries the full licence texts. It is next to `DJ Toolkit.exe`
+  on Windows, and on a Mac inside the app (right-click it, *Show Package Contents*, *Contents*, *Resources*).
+
 ## [0.1.2] - 2026-10-31
 
 ### Added

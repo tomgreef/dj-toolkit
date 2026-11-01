@@ -10,6 +10,34 @@ A test (`tests/test_repo_rules.py`) fails when a package has no row here, or a r
 mentions any more. A new package then never arrives as one more quiet line: it arrives with its reason, ready for the
 owner to read.
 
+## Licences in the downloads
+
+DJ Toolkit's own code is MIT. The downloads combine it with software under other licences, and some of those ask for
+more than a copyright notice. Each download carries `THIRD-PARTY-LICENSES.txt`, written while it is built
+(`tools/make_notices.py`, called by `packaging/dj-toolkit.spec`): what is inside, each part's licence and source, the
+licence files the packages carry, and the full text of the GNU, Mozilla and Python licences
+([`packaging/licenses`](../packaging/licenses/)). The release's self-test fails if a download doesn't hold it, and the
+build stops if a package states a copyleft licence the file has no notice for.
+
+What was decided for each part that asks for more (#78, 2026-11-01): **keep it, and meet its terms**, because each is
+needed today and replacing any of them is a piece of work of its own.
+
+| Part | Licence | Why it is here | How its terms are met |
+|---|---|---|---|
+| `mutagen` | GPL-2.0-or-later | Reads the tags of music files and writes the BPM tag. The permissive tag readers only read. | Notice, licence text and source links in the file. The source of DJ Toolkit is public at each release's tag. |
+| ffmpeg, from `imageio-ffmpeg` | GPL (built with `--enable-gpl`) | Makes the MP3 files. A separate program the app runs, not linked into it. | The build's own configuration line, the source and the licence text are in the file. |
+| Qt, from `PySide6` | LGPL-3.0 (one of its three options) | Every window. | The libraries are separate files in the download, so they can be replaced. Notice, text and sources in the file. |
+| The FFmpeg libraries inside Qt Multimedia | LGPL-2.1-or-later | Play the audio in the app (a second, smaller FFmpeg than the program above). | Separate library files, replaceable. Notice and text in the file. |
+| libsndfile, in `soundfile` | LGPL-2.1-or-later | Opens and writes audio files. | A separate library file, replaceable. Notice and text in the file. |
+| libsoxr, in `soxr` | LGPL-2.1-or-later | Converts the sample rate for `librosa`. | A separate file, replaceable. Notice and text in the file. |
+| `certifi` | MPL-2.0 | Trusted certificates for `requests`. | Notice, text and source link in the file. |
+| PyInstaller's bootloader | GPL-2.0-or-later with an exception | Builds the download. | The exception lets the built program carry other licences. Notice in the file. |
+| Python, and what Python is built with | PSF-2.0 (and OpenSSL, zlib, SQLite and others, each under its own) | Everything runs on it; the download carries it. | Python's own notice and the PSF text are in the file, with a pointer to Python's list of the rest. |
+
+The ffmpeg the app carries is a full build with many codecs, and the app uses it only to write MP3 files. A build with
+only the MP3 encoder would be LGPL and carry far less ([Releasing](releasing.md#not-done-yet)). The wording of the file
+was written by the maintainers, not by a lawyer.
+
 ## Adding a package
 
 A new package needs its own issue first ([AGENTS.md](../AGENTS.md)). Check it the way step 6 of
@@ -18,6 +46,8 @@ pull request, with the name in backticks as the dependency file spells it. Fill 
 
 - **Used for:** what in this project needs it, found by reading the code, not the package's own description.
 - **Licence:** as published. This project is MIT, so a GPL or LGPL licence is named in the row and the owner decides.
+  A package that states a copyleft licence also needs a notice in `tools/make_notices.py`: until it has one, the build
+  stops (and `tests/test_make_notices.py` says why).
 - **Publisher and source repository:** who can publish a release, where the code lives and when the package first
   appeared. A package with one owner says so.
 - **Checked:** the date, and who checked. A row an AI agent wrote says so, and the owner confirms it.

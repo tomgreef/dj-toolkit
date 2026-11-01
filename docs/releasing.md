@@ -9,9 +9,10 @@ A release is a pull request that bumps the version. When it merges, the download
    1. installs the app's dependencies and the build tools (`requirements-build.txt`);
    2. lists the libraries the app is built from, in `DJ-Toolkit-Windows.cdx.json` or `DJ-Toolkit-macOS.cdx.json`
       (`tools/make_sbom.py`);
-   3. builds the app with PyInstaller (`packaging/dj-toolkit.spec`);
+   3. builds the app with PyInstaller (`packaging/dj-toolkit.spec`), which first writes the download's
+      `THIRD-PARTY-LICENSES.txt` (`tools/make_notices.py`) and puts it in the bundle;
    4. runs the built app with `--self-test`, which fails the release if the assets, the tempo analysis, MP3 export
-      (ffmpeg) or Qt don't work inside the bundle;
+      (ffmpeg), Qt or the licence notice don't work or aren't inside the bundle;
    5. packs `DJ-Toolkit-Windows.zip` and `DJ-Toolkit-macOS.dmg`.
 3. It has GitHub sign a record of where the two downloads and the two lists were built (an *attestation*), then
    publishes them as release `v0.2.0`, with `SHA256SUMS.txt`, that version's CHANGELOG notes and the merged pull
@@ -111,6 +112,12 @@ packaging or the dependencies run it too.
 
 ## Not done yet
 
+- **A smaller ffmpeg.** The app uses ffmpeg only to write MP3 files, but the build it carries is a full GPL one, with
+  video codecs such as x264 and x265 built in. A build with only the MP3 encoder would be LGPL, would need far less
+  explaining in `THIRD-PARTY-LICENSES.txt`, and would carry far less code.
+- **A lawyer's read of the licence notice.** `THIRD-PARTY-LICENSES.txt` was written by the maintainers. It says what is
+  inside and where the source is, and it carries the licence texts, but nobody qualified in licences has read its
+  wording ([DECISIONS.md](ux/DECISIONS.md)).
 - **Code signing.** The builds aren't signed, so Windows SmartScreen and macOS Gatekeeper warn on first open; the
   install steps say how to get past that. Signing needs a paid Windows certificate and an Apple Developer account.
 - **Intel Macs.** The macOS build is for Apple silicon. An Intel build needs an Intel runner (or a universal build).
