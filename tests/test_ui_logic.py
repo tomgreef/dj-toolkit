@@ -359,11 +359,11 @@ def test_a_disabled_menu_entry_looks_disabled(app):
 
 
 # ------------------------------------------- the Spotify page, by keyboard and screen reader
-def _tab_stops(page):
+def _tab_stops(page, first):
     """What Tab stops on, in order: walk the page's focus chain once, from its first control."""
     from PySide6.QtCore import Qt
 
-    stops, seen, w = [], set(), page.guide_btn
+    stops, seen, w = [], set(), first
     while w is not None and id(w) not in seen:
         seen.add(id(w))
         if w.focusPolicy() & Qt.FocusPolicy.TabFocus and w.isVisibleTo(page) and w.isEnabled():
@@ -382,7 +382,7 @@ def test_every_tab_stop_on_the_spotify_page_has_a_name_a_screen_reader_can_say(a
     t.stack.setCurrentIndex(1)  # the preview table, which a preview puts on show
     labelled = {lab.buddy(): lab.text() for lab in t.findChildren(QLabel) if lab.buddy() is not None}
     nameless = []
-    for w in _tab_stops(t):
+    for w in _tab_stops(t, t.guide_btn):
         if w.objectName() == "qt_spinbox_lineedit":  # the editor inside a spin box: the box itself carries the name
             continue
         name = w.accessibleName() or (w.text() if isinstance(w, QAbstractButton) else "") or labelled.get(w, "")
@@ -399,7 +399,7 @@ def test_tab_goes_down_the_spotify_page_and_reaches_the_preview(app):
 
     t = SyncTab(Settings())
     t.stack.setCurrentIndex(1)
-    stops = _tab_stops(t)
+    stops = _tab_stops(t, t.guide_btn)
     browse = next(b for b in t.findChildren(QPushButton) if b.text().startswith("Browse"))
     i = stops.index(t.root_edit)
     assert stops[i + 1] is browse and stops[i + 2] is t.ignore_edit  # Browse follows the folder it browses for
@@ -440,3 +440,19 @@ def test_the_preview_table_shows_where_you_are_in_both_themes(app):
         assert [i.row() for i in t.table.selectedIndexes()].count(1) == t.table.columnCount()  # the whole row
         t.close()
     theme.apply(app, "dark", theme.DEFAULT_ACCENT)
+
+
+def test_tutorials_tab_a11y(app):
+    from djtoolkit.settings import Settings
+    from djtoolkit.ui.tutorials_tab import TutorialsTab
+
+    t = TutorialsTab(settings=Settings())
+
+    assert t.list.accessibleName() == "Tutorials"
+    assert t.kind.accessibleName() == "Type of post"
+    assert t.text.accessibleName() == "Your post"
+
+    stops = _tab_stops(t, t.guide_btn)
+    assert t.list in stops
+    assert t.kind in stops
+    assert t.text in stops
