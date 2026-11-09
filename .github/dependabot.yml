@@ -1,6 +1,7 @@
 # Dependency updates, every Monday. What happens to each kind is in docs/maintaining.md:
 # - minor and patch updates come as one pull request per ecosystem and merge themselves once CI is green
-#   (.github/workflows/dependabot-auto-merge.yml);
+#   (.github/workflows/dependabot-auto-merge.yml), except the commit hooks: their file has a code owner, so the bot's
+#   approval is not enough and that pull request waits for the owner;
 # - major updates come one per pull request, labelled "major update", and wait for the monthly upgrade
 #   (.github/workflows/major-updates.yml hands them to Copilot).
 # A new release waits a few days (cooldown) before it's proposed, so a broken or hijacked version can be caught first.
@@ -49,5 +50,24 @@ updates:
       default-days: 7
     groups:
       actions:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  # The commit hooks in .pre-commit-config.yaml: Dependabot moves each `rev: <sha> # frozen: vX.Y.Z` and its comment
+  # together. This ecosystem takes a default cooldown only, no per-kind days.
+  - package-ecosystem: pre-commit
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    ignore:
+      # The ruff hook has to match ruff in requirements-dev.txt (test_ruff_pre_commit_version_matches_requirements_dev).
+      # Dependabot would move them in two pull requests that each fail that test, so the hook is moved by hand with the
+      # Python update (docs/maintaining.md, "Dependencies"). Dependabot names a hook by its repository URL.
+      - dependency-name: "https://github.com/astral-sh/ruff-pre-commit"
+    groups:
+      hooks:
         patterns: ["*"]
         update-types: [minor, patch]
