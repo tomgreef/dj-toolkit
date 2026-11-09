@@ -200,9 +200,10 @@ good, revoke the bot's token.
 Dependabot checks every Monday. It waits a few days before proposing a new release (a cooldown), so a broken or
 hijacked version has time to be caught. Security fixes don't wait.
 
-- **Minor and patch updates** arrive as one pull request per ecosystem (Python, the website, Actions).
+- **Minor and patch updates** arrive as one pull request per ecosystem (Python, the website, Actions, commit hooks).
   [`dependabot-auto-merge.yml`](../.github/workflows/dependabot-auto-merge.yml) approves them and turns on
-  auto-merge, so they merge once CI is green. Nothing to do unless CI fails. A Python update that needs a package the
+  auto-merge, so they merge once CI is green. Nothing to do unless CI fails, except for the commit hooks (below),
+  which wait for you. A Python update that needs a package the
   requirements files don't list yet fails with *Hashes are required*: see [Requirement hashes](#requirement-hashes).
 - **Major updates** arrive one per pull request, labelled `major update`, and wait. On the last day of each month,
   [`major-updates.yml`](../.github/workflows/major-updates.yml) opens an issue for each one and assigns it to
@@ -218,16 +219,26 @@ on any that isn't. Dependabot's `github-actions` updates move the SHA and the co
 current; keep the comment in the `# vX.Y.Z` form.
 
 The commit hooks in [`.pre-commit-config.yaml`](../.pre-commit-config.yaml) are pinned the same way, as
-`rev: <sha> # frozen: vX.Y.Z`, and a test fails on any `rev:` that isn't. Dependabot isn't set up for them, so nothing
-proposes an update: look when you bump `ruff` in `requirements-dev.txt`, which the `ruff-pre-commit` version has to
-match, and now and then otherwise. To update one, run `.venv/bin/pre-commit autoupdate --freeze` (it downloads each hook
-repository, so read the diff afterwards), or find the commit by hand and write both the SHA and the version:
+`rev: <sha> # frozen: vX.Y.Z`, and a test fails on any `rev:` that isn't. Dependabot's `pre-commit` updates move the
+SHA and the comment together, as one pull request a week when a hook has a new release. That file has a code owner, so
+the bot's approval is not enough and the pull request waits for you: it changes code that runs on every contributor's
+machine at each commit. Before you approve, check that the new SHA is the commit of the tag in the comment (and that
+the repository is the same one):
 
 ```
-gh api repos/astral-sh/ruff-pre-commit/git/ref/tags/vX.Y.Z --jq .object
+gh api repos/<owner>/<hook-repo>/git/ref/tags/vX.Y.Z --jq .object
 ```
 
-If `type` is `tag`, run `gh api repos/astral-sh/ruff-pre-commit/git/tags/<sha> --jq .object.sha` to get the commit.
+If `type` is `tag`, run `gh api repos/<owner>/<hook-repo>/git/tags/<sha> --jq .object.sha` to get the commit.
+
+**The ruff hook is the exception, and Dependabot is told to leave it out.** `ruff-pre-commit` has to match `ruff` in
+`requirements-dev.txt` (`test_ruff_pre_commit_version_matches_requirements_dev`), and Dependabot would move the two in
+separate pull requests that each fail that test. So when the Python update bumps `ruff` and that test fails, the hook
+is moved by hand. Nobody can push that commit to Dependabot's branch and approve it, because the hook file has a code
+owner and the person who pushed last can't approve: open a pull request that cherry-picks Dependabot's commit
+(authorship kept) and adds one commit moving the hook (as #159 did), and say it replaces the Dependabot one.
+`.venv/bin/pre-commit autoupdate --freeze --repo https://github.com/astral-sh/ruff-pre-commit` writes the SHA and the
+comment for you (it downloads the hook repository, so read the diff afterwards).
 
 ### Requirement hashes
 
