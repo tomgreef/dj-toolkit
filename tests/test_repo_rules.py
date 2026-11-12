@@ -6,6 +6,8 @@ import json
 import re
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[1]
 GITHUB = ROOT / ".github"
 DEPENDENCIES_PAGE = ROOT / "docs" / "dependencies.md"
@@ -134,13 +136,20 @@ def test_every_pre_commit_hook_repository_is_pinned_to_a_full_commit_sha():
 def test_every_python_requirement_install_checks_hashes():
     installs = []
     unchecked = []
-    for flow in sorted((GITHUB / "workflows").glob("*.yml")):
-        for number, line in enumerate(flow.read_text("utf8").splitlines(), 1):
-            code = line.split("#", 1)[0]
-            if re.search(r"\bpip\s+install\b", code) and re.search(r"\s-r\s*requirements[\w-]*\.txt\b", code):
-                installs.append(f"{flow.name}:{number}")
-                if not re.search(r"(?<![\w-])--require-hashes(?![\w-])", code):
-                    unchecked.append(f"{flow.name}:{number}")
+    for flow in sorted((GITHUB / "workflows").iterdir()):
+        if flow.suffix not in {".yml", ".yaml"}:
+            continue
+        workflow = yaml.safe_load(flow.read_text("utf8"))
+        for job, config in workflow["jobs"].items():
+            for number, step in enumerate(config.get("steps", []), 1):
+                run = step.get("run", "").replace("\\\n", "")
+                for line in run.splitlines():
+                    code = line.split("#", 1)[0]
+                    if re.search(r"\bpip\s+install\b", code) and re.search(r"\s-r\s*requirements[\w-]*\.txt\b", code):
+                        location = f"{flow.name}: {job}, step {number}: {code.strip()}"
+                        installs.append(location)
+                        if not re.search(r"(?<![\w-])--require-hashes(?![\w-])", code):
+                            unchecked.append(location)
     assert installs, "no `pip install -r requirements...` found: have the workflows changed shape?"
     assert not unchecked, (
         "add `--require-hashes` to each `pip install -r requirements...` below "
@@ -150,10 +159,10 @@ def test_every_python_requirement_install_checks_hashes():
 
 def test_every_python_package_has_a_sha256_hash():
     unhashed = []
-    for name in ("requirements.txt", "requirements-dev.txt", "requirements-build.txt"):
+    for path in sorted(ROOT.glob("requirements*.txt")):
         package = None
         has_hash = False
-        for number, line in enumerate((ROOT / name).read_text("utf8").splitlines(), 1):
+        for number, line in enumerate(path.read_text("utf8").splitlines(), 1):
             code = line.split("#", 1)[0].strip().rstrip("\\").strip()
             if not code:
                 continue
@@ -162,7 +171,7 @@ def test_every_python_package_has_a_sha256_hash():
             elif not code.startswith("-"):
                 if package and not has_hash:
                     unhashed.append(package)
-                package = f"{name}:{number}: {code}"
+                package = f"{path.name}:{number}: {code}"
                 has_hash = False
         if package and not has_hash:
             unhashed.append(package)
