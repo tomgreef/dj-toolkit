@@ -92,6 +92,7 @@ class TutorialsTab(QWidget):
         self.posts.setMargin(2)
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
+        scroll.setAccessibleName("Posts area")
         scroll.setFrameShape(QScrollArea.Shape.NoFrame)
         scroll.setWidget(self.posts)
         right.addWidget(scroll, 1)
