@@ -359,11 +359,11 @@ def test_a_disabled_menu_entry_looks_disabled(app):
 
 
 # ------------------------------------------- the Spotify page, by keyboard and screen reader
-def _tab_stops(page):
+def _tab_stops(page, first):
     """What Tab stops on, in order: walk the page's focus chain once, from its first control."""
     from PySide6.QtCore import Qt
 
-    stops, seen, w = [], set(), page.guide_btn
+    stops, seen, w = [], set(), first
     while w is not None and id(w) not in seen:
         seen.add(id(w))
         if w.focusPolicy() & Qt.FocusPolicy.TabFocus and w.isVisibleTo(page) and w.isEnabled():
@@ -382,7 +382,7 @@ def test_every_tab_stop_on_the_spotify_page_has_a_name_a_screen_reader_can_say(a
     t.stack.setCurrentIndex(1)  # the preview table, which a preview puts on show
     labelled = {lab.buddy(): lab.text() for lab in t.findChildren(QLabel) if lab.buddy() is not None}
     nameless = []
-    for w in _tab_stops(t):
+    for w in _tab_stops(t, t.guide_btn):
         if w.objectName() == "qt_spinbox_lineedit":  # the editor inside a spin box: the box itself carries the name
             continue
         name = w.accessibleName() or (w.text() if isinstance(w, QAbstractButton) else "") or labelled.get(w, "")
@@ -399,7 +399,7 @@ def test_tab_goes_down_the_spotify_page_and_reaches_the_preview(app):
 
     t = SyncTab(Settings())
     t.stack.setCurrentIndex(1)
-    stops = _tab_stops(t)
+    stops = _tab_stops(t, t.guide_btn)
     browse = next(b for b in t.findChildren(QPushButton) if b.text().startswith("Browse"))
     i = stops.index(t.root_edit)
     assert stops[i + 1] is browse and stops[i + 2] is t.ignore_edit  # Browse follows the folder it browses for
@@ -438,5 +438,48 @@ def test_the_preview_table_shows_where_you_are_in_both_themes(app):
         assert view.pixelColor(3, current_y) == QColor(theme.P.select), mode
         assert view.pixelColor(3, above_y) != QColor(theme.P.select), mode
         assert [i.row() for i in t.table.selectedIndexes()].count(1) == t.table.columnCount()  # the whole row
+        t.close()
+    theme.apply(app, "dark", theme.DEFAULT_ACCENT)
+
+
+def test_tutorials_tab_a11y(app):
+    from djtoolkit.settings import Settings
+    from djtoolkit.ui.tutorials_tab import TutorialsTab
+
+    t = TutorialsTab(settings=Settings())
+
+    assert t.list.accessibleName() == "Tutorials"
+    assert t.kind.accessibleName() == "Type of post"
+    assert t.text.accessibleName() == "Your post"
+    assert t.scroll.accessibleName() == "Posts area"  # without it, a screen reader has nothing to say here
+
+    stops = _tab_stops(t, t.list)  # the Tutorials page starts at its list of tutorials
+    assert t.list in stops and t.scroll in stops and t.kind in stops and t.text in stops
+    # Tab goes from the list to the posts (that is how the keyboard scrolls them), then to the post form
+    assert stops.index(t.scroll) == stops.index(t.list) + 1
+    assert stops.index(t.kind) == stops.index(t.scroll) + 1 and stops.index(t.text) == stops.index(t.kind) + 1
+
+
+def test_the_posts_area_shows_where_you_are_in_both_themes(app):
+    """Tab reaches the posts so the keyboard can scroll them: a ring has to say so, in Booth and Daylight."""
+    from PySide6.QtCore import Qt
+    from PySide6.QtGui import QColor
+
+    from djtoolkit.settings import Settings
+    from djtoolkit.ui.tutorials_tab import TutorialsTab
+
+    for mode in ("dark", "light"):
+        theme.apply(app, mode)
+        t = TutorialsTab(settings=Settings())
+        t.resize(900, 700)
+        t.show()
+        edge = (1, t.scroll.height() // 2)  # inside the ring's 2 px, halfway down the left side
+        t.list.setFocus(Qt.FocusReason.TabFocusReason)
+        app.processEvents()
+        assert t.scroll.grab().toImage().pixelColor(*edge) != QColor(theme.P.link), mode  # no ring while elsewhere
+        t.scroll.setFocus(Qt.FocusReason.TabFocusReason)
+        app.processEvents()
+        assert t.scroll.hasFocus()
+        assert t.scroll.grab().toImage().pixelColor(*edge) == QColor(theme.P.link), mode
         t.close()
     theme.apply(app, "dark", theme.DEFAULT_ACCENT)

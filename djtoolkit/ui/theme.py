@@ -287,6 +287,8 @@ QListWidget::item {{ padding: 10px 12px; border-radius: {R_CONTROL}px; color: {c
 QListWidget::item:hover {{ background: {c.hover}; color: {c.text}; }}
 QListWidget::item:selected {{ background: {c.select}; color: {c.text}; font-weight: 600; }}
 QScrollArea {{ border: none; }}
+QScrollArea#posts {{ border: 2px solid transparent; border-radius: {R_CONTROL}px; }}
+QScrollArea#posts:focus {{ border-color: {c.link}; }}
 QScrollBar:vertical {{ background: transparent; width: 10px; margin: 2px; }}
 QScrollBar::handle:vertical {{ background: {c.border_strong}; border-radius: 4px; min-height: 28px; }}
 QScrollBar::handle:vertical:hover {{ background: {c.muted}; }}
