@@ -55,8 +55,10 @@ DJs, designers, writers and developers are all welcome, and AI-assisted work is 
 ## Licence
 
 [MIT](LICENSE) for DJ Toolkit's own code. The downloads also contain other people's software under its own licences,
-some of them copyleft (GPL, LGPL, MPL). [docs/dependencies.md](docs/dependencies.md) lists each package with its licence
-and where its source is, and each release has a list of every library inside it (the `.cdx.json` files). How the
-project meets those licences is still being decided: [#78](https://github.com/tomgreef/dj-toolkit/issues/78).
+some of them copyleft (GPL, LGPL, MPL). Each download carries `THIRD-PARTY-LICENSES.txt`: what is inside, each part's
+licence and where its source is, and the full licence texts. It sits next to `DJ Toolkit.exe` on Windows, and on a Mac
+in the app (right-click it, *Show Package Contents*, then *Contents*, *Resources*).
+[docs/dependencies.md](docs/dependencies.md#licences-in-the-downloads) says which parts and why they are there, and each
+release has a list of every library inside it (the `.cdx.json` files).
 
 DJ Toolkit is an independent project, not affiliated with Spotify or AlphaTheta (rekordbox).

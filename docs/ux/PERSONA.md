@@ -68,8 +68,7 @@ cache, threshold, dry run, mirror mode, sync semantics, "genre" as a technical f
 
 - [rekordbox: "media is missing" (DJ TechTools forum)](https://forum.djtechtools.com/t/rekordbox-media-is-missing/66428)
 - [rekordbox export mode (We Are Crossfader)](https://wearecrossfader.co.uk/blog/rekordbox-export-mode/)
-- [rekordbox tips: export mode (We Are Crossfader)](https://wearecrossfader.co.uk/blog/rekordbox-tips-tricks-export-mode/)
-- [USB export workflow best practices (DJ TechTools forum)](https://forum.djtechtools.com/showthread.php?p=765204)
+- [Traktor/Mixed In Key/Rekordbuddy 2/Rekordbox USB Export - Workflow Best Practices? (DJ TechTools forum)](https://forum.djtechtools.com/t/traktor-mixed-in-key-rekordbuddy-2-rekordbox-usb-export-workflow-best-practices/77125)
 - Product owner's lived experience as a working DJ (not independently verifiable).
 
 ## Open questions to validate with real DJs

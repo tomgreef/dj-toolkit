@@ -1,0 +1,10 @@
+scheme = ["http", "https"]
+exclude = [
+  '^https://github\.com/<you>/dj-toolkit\.git$',
+  # needs a login, so it answers a checker with 403 although the link works for the person it is for
+  '^https://claude\.ai/',
+]
+exclude_loopback = true
+include_mail = false
+# the READMEs of the website's dependencies are not ours to fix: without this, './**/*.md' would crawl them all
+exclude_path = ["node_modules"]

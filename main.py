@@ -35,11 +35,15 @@ def self_test() -> int:
         import numpy as np
 
         from djtoolkit.audio import core, export
-        from djtoolkit.paths import assets_dir
+        from djtoolkit.paths import assets_dir, project_root
         from djtoolkit.tutorials import load_tutorials
 
         assert load_tutorials(), "no tutorials found"
         assert (assets_dir() / "setup" / "mock" / "step1.png").is_file(), "setup images missing"
+        if getattr(sys, "frozen", False):  # a download carries its licence notice; a source checkout has none
+            notice = project_root() / "THIRD-PARTY-LICENSES.txt"
+            text = notice.read_text("utf-8") if notice.is_file() else ""
+            assert "GNU GENERAL PUBLIC LICENSE" in text and "ffmpeg" in text, "licence notice missing from the build"
 
         sr, bpm = 22050, 120.0
         clicks = np.zeros((sr * 8, 1), dtype="float32")
