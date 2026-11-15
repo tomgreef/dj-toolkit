@@ -5,10 +5,17 @@ and versions follow [Semantic Versioning](https://semver.org/). Each release's s
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-11-15
+
+### Changed
+
+- The software from other people inside the app is updated to newer versions, including the part that writes MP3
+  files. Nothing in how you use the app changes.
+
 ### Fixed
 
 - On the Tutorials page, a screen reader now says "Posts area" for the posts under a tutorial, and a ring shows when
-  Tab has reached them, in Booth and Daylight.
+  Tab has reached them, in Booth and Daylight. Thanks to @lijin68.
 
 ## [0.1.3] - 2026-11-01
 
