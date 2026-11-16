@@ -335,9 +335,9 @@ lazy-loader==0.6 \
     # via
     #   -c requirements.txt
     #   librosa
-librosa==1.0.0 \
-    --hash=sha256:5910a6c0e1b2e494b92758c1615a7acbd0515a2315e138927ba2982f2af88857 \
-    --hash=sha256:73ed480d4022e436e85dfa6f6b06ff38a259b9210039ac99939cd64854b61a57
+librosa==1.0.1 \
+    --hash=sha256:bc26f947ca08307c5ff116b219560372aa340213d7f3cc2cf1f3f02b4e251147 \
+    --hash=sha256:e3ab6451078d76bf8057a8262bc44c23fe3f95105cfed8acb415c3427b72b949
     # via
     #   -c requirements.txt
     #   -r tools/deps/app.in
